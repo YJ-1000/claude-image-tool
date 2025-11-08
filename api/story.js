@@ -2,7 +2,7 @@ import OpenAI from "openai";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method Not Allowed" });
+    return res.status(405).json({ error: "Only POST method allowed" });
   }
 
   try {
@@ -10,23 +10,21 @@ export default async function handler(req, res) {
       apiKey: process.env.OPENAI_API_KEY,
     });
 
-    const { original } = req.body;
+    const { text } = req.body;
 
     const completion = await client.chat.completions.create({
-      model: "gpt-5", // ← 필요하면 model 변경
+      model: "gpt-5",
       messages: [
-        { role: "system", content: "당신은 시니어 사연을 재창작하는 스토리 작가입니다." },
-        { role: "user", content: `다음 내용을 기반으로 스토리를 재창작해 주세요:\n\n${original}` },
+        {
+          role: "user",
+          content: `다음 내용을 기반으로 JSON 구조를 생성해줘: ${text}`,
+        },
       ],
     });
 
-    res.status(200).json({
-      result: completion.choices[0].message.content,
-    });
+    res.status(200).json({ result: completion.choices[0].message.content });
   } catch (error) {
-    console.error("[API ERROR]", error);
-    res.status(500).json({
-      error: error.message || "서버 오류 발생",
-    });
+    console.error("SERVER ERROR:", error);
+    res.status(500).json({ error: "Server error occurred", detail: error.message });
   }
 }
