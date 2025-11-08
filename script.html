@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>시니어 사연 대본 생성툴</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #111;
+      color: white;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #222;
+      padding: 20px;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .container {
+      padding: 20px;
+      max-width: 900px;
+      margin: auto;
+    }
+    textarea {
+      width: 100%;
+      height: 200px;
+      background: #000;
+      color: #fff;
+      border: 1px solid #444;
+      padding: 10px;
+      font-size: 14px;
+      resize: vertical;
+    }
+    button {
+      background: orange;
+      border: none;
+      padding: 12px 20px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    #output {
+      margin-top: 20px;
+      background: #181818;
+      padding: 15px;
+      border-radius: 5px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+
+<body>
+  <header>✏️ 시니어 사연 자동 대본 생성툴</header>
+
+  <div class="container">
+
+    <h3>1. 원본 영상/대본 입력</h3>
+    <textarea id="inputScript" placeholder="벤치마킹할 영상 대본을 붙여넣으세요"></textarea>
+
+    <button onclick="generateStory()">스토리 생성</button>
+
+    <h3>결과</h3>
+    <div id="output">여기에 결과가 생성됩니다...</div>
+
+  </div>
+
+  <script>
+    async function generateStory() {
+      const original = document.getElementById("inputScript").value;
+
+      document.getElementById("output").innerText = "👉 스토리 분석 중... 잠시만 기다려주세요.";
+
+      const payload = {
+        model: "gpt-5",  // 나중에 필요하면 클로드로 바꿀 수 있음
+        messages: [
+          {
+            role: "system",
+            content: "당신은 유튜브 대본 제작 전문가입니다. 원본을 분석하고 새로운 사연을 만듭니다."
+          },
+          {
+            role: "user",
+            content: `다음 원본을 분석해서 새로운 시니어 사연 플롯 5개를 만들어줘:\n\n${original}`
+          }
+        ]
+      };
+
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer YOUR_OPENAI_API_KEY`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+      document.getElementById("output").innerText = data.choices[0].message.content;
+    }
+  </script>
+
+</body>
+</html>
