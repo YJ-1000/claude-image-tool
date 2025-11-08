@@ -1,8 +1,14 @@
 import OpenAI from "openai";
 
-export default async function handler(req, res) {
+export const config = {
+  runtime: "edge", // Vercel Edge Function
+};
+
+export default async function handler(req) {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Only POST method allowed" });
+    return new Response(JSON.stringify({ error: "Only POST allowed" }), {
+      status: 405,
+    });
   }
 
   try {
@@ -10,7 +16,7 @@ export default async function handler(req, res) {
       apiKey: process.env.OPENAI_API_KEY,
     });
 
-    const { text } = req.body;
+    const { text } = await req.json();
 
     const completion = await client.chat.completions.create({
       model: "gpt-5",
@@ -22,9 +28,14 @@ export default async function handler(req, res) {
       ],
     });
 
-    res.status(200).json({ result: completion.choices[0].message.content });
+    return new Response(
+      JSON.stringify({ result: completion.choices[0].message.content }),
+      { status: 200 }
+    );
   } catch (error) {
-    console.error("SERVER ERROR:", error);
-    res.status(500).json({ error: "Server error occurred", detail: error.message });
+    console.error("[SERVER ERROR]", error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+    });
   }
 }
