@@ -71,16 +71,18 @@ async function generateStory() {
   const original = document.getElementById("inputScript").value;
 
   document.getElementById("output").innerText =
-    "👉 스토리 분석 중... 잠시만 기다려주세요.";
+    "스토리 생성 중입니다...";
 
   const response = await fetch("/api/story", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify({ original }),
   });
 
   const data = await response.json();
-  document.getElementById("output").innerText = data.response;
+  document.getElementById("output").innerText = data.result;
 }
 </script>
 
