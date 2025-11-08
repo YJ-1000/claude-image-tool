@@ -1,4 +1,4 @@
-// ✅ Node.js 환경 강제
+// ✅ Vercel Edge Function이 아니라 Node.js 서버 함수로 강제 설정
 export const config = {
   runtime: "nodejs",
 };
@@ -7,7 +7,7 @@ import OpenAI from "openai";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Only POST method allowed" });
+    return res.status(405).json({ error: "Only POST allowed" });
   }
 
   try {
@@ -18,19 +18,22 @@ export default async function handler(req, res) {
     const { text } = req.body;
 
     const completion = await client.chat.completions.create({
-      model: "gpt-5",
+      model: "gpt-4o-mini", // 또는 gpt-5 / gpt-4o
       messages: [
         {
           role: "user",
-          content: `다음 내용을 기반으로 JSON 구조를 생성해줘: ${text}`,
+          content: `다음 내용을 JSON 구조로 만들어줘: ${text}`,
         },
       ],
     });
 
-    res.status(200).json({ result: completion.choices[0].message.content });
-  } catch (error) {
-    console.error("SERVER ERROR:", error);
-    res.status(500).json({ error: "Server Error" });
+    return res.status(200).json({
+      result: completion.choices[0].message.content,
+    });
+
+  } catch (err) {
+    console.error("SERVER ERROR:", err);
+    return res.status(500).json({ error: "Server error" });
   }
 }
 
