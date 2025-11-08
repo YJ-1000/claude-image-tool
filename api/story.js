@@ -1,14 +1,13 @@
-import OpenAI from "openai";
-
+// ✅ Node.js 환경 강제
 export const config = {
-  runtime: "edge", // Vercel Edge Function
+  runtime: "nodejs",
 };
 
-export default async function handler(req) {
+import OpenAI from "openai";
+
+export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Only POST allowed" }), {
-      status: 405,
-    });
+    return res.status(405).json({ error: "Only POST method allowed" });
   }
 
   try {
@@ -16,7 +15,7 @@ export default async function handler(req) {
       apiKey: process.env.OPENAI_API_KEY,
     });
 
-    const { text } = await req.json();
+    const { text } = req.body;
 
     const completion = await client.chat.completions.create({
       model: "gpt-5",
@@ -28,14 +27,10 @@ export default async function handler(req) {
       ],
     });
 
-    return new Response(
-      JSON.stringify({ result: completion.choices[0].message.content }),
-      { status: 200 }
-    );
+    res.status(200).json({ result: completion.choices[0].message.content });
   } catch (error) {
-    console.error("[SERVER ERROR]", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-    });
+    console.error("SERVER ERROR:", error);
+    res.status(500).json({ error: "Server Error" });
   }
 }
+
